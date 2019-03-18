@@ -25,12 +25,12 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         ])
 
     def on_welcome(self, c, e):
-        print("Joining!")
+        print("Joining channel: ", self.channel)
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
         c.cap('REQ', ':twitch.tv/commands')
         c.join(self.channel)
-        c.privmsg(self.channel, "TwitchBot v0 joining channel!")
+        c.privmsg(self.channel, "TwitchTranslator bot by shirokumaoni joining channel!")
 
     def on_pubmsg(self, c, e):
         # If a chat message starts with an exclamation point, try to run it as a command
@@ -44,11 +44,14 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             if d.lang == "ja": src = 'ko'
             elif d.lang == "ko": src = 'ja'
             elif d.lang == "en": src = 'ko'
-            if src == '': print(f"Unknown language {src}")
+            if src == '': 
+                print(f"Unknown language {src}")
+                return
             t = self.trans.translate(e.arguments[0], dest=src)
             source = e.source.split('!')[0]
             c.privmsg(self.channel, f"{t.text} @{source}") #  https://bit.ly/2JkMBmb")
-            print('Recieved message: ', e.arguments, e.source, e.tags, e.target, e.type)
+            print('Recieved message: "', e.arguments[0], '" from ', source, " in language ", d.lang)
+            print('Translated message: ', t.text)
         return
 
     def do_command(self, e, cmd):
@@ -61,5 +64,13 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             c.privmsg(self.channel, "I dunno what "+cmd+" means")
 
 if __name__ == "__main__":
-    bot = TwitchBot()
-    bot.start()
+  while True:
+    try:
+        bot = TwitchBot()
+        bot.start()
+    except Exception as e:
+        print("ERROR!!!!! Printing backtrace:")
+        print()
+        print(e)
+        print()
+        print("ERROR!!!!! Trying to restart.")
