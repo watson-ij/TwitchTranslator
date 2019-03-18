@@ -1,0 +1,24 @@
+* Twitch IRC Bot
+
+on_pubmsg(self, c, e):
+
+c is the connection, e is the event.
+
+e is an object that has: ['arguments', 'source', 'tags', 'target', 'type']
+
+e.arguments: ['Another test!']
+e.source: shirokumaoni!shirokumaoni@shirokumaoni.tmi.twitch.tv
+e.tags: [{'key': 'badges', 'value': 'subscriber/3'}, {'key': 'color', 'value': None}, {'key': 'display-name', 'value': 'shirokumaoni'}, {'key': 'emotes', 'value': None}, {'key': 'flags', 'value': None}, {'key': 'id', 'value': 'dddc9c5e-4a5b-4ac1-87c9-35968fb106ea'}, {'key': 'mod', 'value': '0'}, {'key': 'room-id', 'value': '142166792'}, {'key': 'subscriber', 'value': '1'}, {'key': 'tmi-sent-ts', 'value': '1552915000849'}, {'key': 'turbo', 'value': '0'}, {'key': 'user-id', 'value': '235653061'}, {'key': 'user-type', 'value': None}]
+e.target: #yasumi57
+e.type: pubmsg
+
+* Google Translate Library
+
+from googletrans import Translator
+
+"How to use"
+
+t = Translator().translate('こんにちは世界', dest='en')
+t.text # translation
+t.src  # detected source language
+
