@@ -154,6 +154,7 @@ class Example(wx.Frame):
             '--clientid', self.clientid,
             '--lang', *[f"{f},{t}" for f, t in self.lang]
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        pipe_no_wait(self.bot.stdout)
         self.Log.WriteText("SYS\tStarting TwitchBot\n")
 
     def Stop(self, e):
@@ -179,6 +180,8 @@ import os
 
 if os.name != "nt":
   import fcntl
+  def pipe_no_wait(*args):
+      return True
   def non_block_read(output):
     ''' even in a thread, a normal read with block until the buffer is full '''
     fd = output.fileno()
@@ -189,11 +192,39 @@ if os.name != "nt":
     except:
         return ''
 else:
-  def non_block_read(output):
-    try:
-      return output.read()
-    except:
-      return ''
+    # https://gist.github.com/techtonik/48c2561f38f729a15b7b
+    import msvcrt
+    import os
+
+    from ctypes import windll, byref, wintypes, GetLastError, WinError
+    from ctypes.wintypes import HANDLE, DWORD, POINTER, BOOL
+
+    LPDWORD = POINTER(DWORD)
+
+    PIPE_NOWAIT = wintypes.DWORD(0x00000001)
+
+    ERROR_NO_DATA = 232
+
+    def pipe_no_wait(pipefd):
+      """ pipefd is a integer as returned by os.pipe """
+
+      SetNamedPipeHandleState = windll.kernel32.SetNamedPipeHandleState
+      SetNamedPipeHandleState.argtypes = [HANDLE, LPDWORD, LPDWORD, LPDWORD]
+      SetNamedPipeHandleState.restype = BOOL
+
+      h = msvcrt.get_osfhandle(pipefd)
+
+      res = windll.kernel32.SetNamedPipeHandleState(h, byref(PIPE_NOWAIT), None, None)
+      if res == 0:
+          print(WinError())
+          return False
+      return True
+    def non_block_read(output):
+     try:
+       return output.read()
+     except:
+       return ''
+
 def main():
     settings = json.load(open('settings.json', 'r'))
     app = wx.App()
