@@ -39,6 +39,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             print('Received command: ' + cmd)
             self.do_command(e, cmd)
         else:
+            if e.arguments[0].strip().rstrip().startswith('?'): return
             d = self.trans.detect(e.arguments[0])
             src = ''
             if d.lang == "ja": src = 'ko'
@@ -61,7 +62,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             print("dice?")
             c.privmsg(self.channel, "You rolled a %d" % random.randint(1, 6))
         else:
-            c.privmsg(self.channel, "I dunno what "+cmd+" means")
+            print(self.channel, "I dunno what "+cmd+" means")
 
 if __name__ == "__main__":
   while True:
