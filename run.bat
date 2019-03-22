@@ -1,1 +1,1 @@
-"C:\Users\MSI\AppData\Local\Programs\Python\Python37\python.exe" "twitchbot.py"
+"C:\Users\MSI\AppData\Local\Programs\Python\Python37\python.exe" "gui.py"

@@ -74,7 +74,7 @@ class Example(wx.Frame):
         # Language Picker
         hs = wx.BoxSizer(wx.HORIZONTAL)
         rb1 = wx.BoxSizer(wx.VERTICAL)
-        txt11 = wx.StaticText(toppan, label="English->"); txt11.SetLabelMarkup("<big>English-></big>")
+        txt11 = wx.StaticText(toppan, label="English->"); #txt11.SetLabelMarkup("<big>English-></big>")
         rbt1 = wx.CheckBox(toppan, label="Korean")
         rbt2 = wx.CheckBox(toppan, label="Japanese")
         rbt3 = wx.CheckBox(toppan, label="Chinese")
@@ -82,7 +82,7 @@ class Example(wx.Frame):
         hs.Add(rb1, flag=wx.ALL, border=10)
 
         rb1 = wx.BoxSizer(wx.VERTICAL)
-        txt11 = wx.StaticText(toppan, label="Korean->"); txt11.SetLabelMarkup("<big>Korean-></big>")
+        txt11 = wx.StaticText(toppan, label="Korean->"); #txt11.SetLabelMarkup("<big>Korean-></big>")
         rbt1 = wx.CheckBox(toppan, label="English")
         rbt2 = wx.CheckBox(toppan, label="Japanese")
         rbt3 = wx.CheckBox(toppan, label="Chinese")
@@ -90,7 +90,7 @@ class Example(wx.Frame):
         hs.Add(rb1, flag=wx.ALL, border=10)
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
-        txt11 = wx.StaticText(toppan, label="Japanese->"); txt11.SetLabelMarkup("<big>Japanese-></big>")
+        txt11 = wx.StaticText(toppan, label="Japanese->"); #txt11.SetLabelMarkup("<big>Japanese-></big>")
         rbt1 = wx.CheckBox(toppan, label="English")
         rbt2 = wx.CheckBox(toppan, label="Korean")
         rbt3 = wx.CheckBox(toppan, label="Chinese")
@@ -98,7 +98,7 @@ class Example(wx.Frame):
         hs.Add(rb1, flag=wx.ALL, border=10)
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
-        txt11 = wx.StaticText(toppan, label="Chinese->"); txt11.SetLabelMarkup("<big>Chinese-></big>")
+        txt11 = wx.StaticText(toppan, label="Chinese->"); #txt11.SetLabelMarkup("<big>Chinese-></big>")
         rbt1 = wx.CheckBox(toppan, label="English")
         rbt2 = wx.CheckBox(toppan, label="Korean")
         rbt3 = wx.CheckBox(toppan, label="Japanese")
@@ -175,9 +175,11 @@ class Example(wx.Frame):
             if o: self.Log.WriteText("ERR\t" + o.decode('utf-8'))
 
 # From https://chase-seibert.github.io/blog/2012/11/16/python-subprocess-asynchronous-read-stdout.html
-import fcntl
 import os
-def non_block_read(output):
+
+if os.name != "nt":
+  import fcntl
+  def non_block_read(output):
     ''' even in a thread, a normal read with block until the buffer is full '''
     fd = output.fileno()
     fl = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -186,7 +188,12 @@ def non_block_read(output):
         return output.read()
     except:
         return ''
-
+else:
+  def non_block_read(output):
+    try:
+      return output.read()
+    except:
+      return ''
 def main():
     settings = json.load(open('settings.json', 'r'))
     app = wx.App()
