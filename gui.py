@@ -20,6 +20,8 @@ class Example(wx.Frame):
         self.lang = settings['lang']
         self.clientid = settings['clientid']
         self.clientsecret = settings['clientsecret']
+        # Languages
+        self.langBoxes = {}
         # GUI
         super(Example, self).__init__(*args, **kwargs)
         self.initMenu()
@@ -80,6 +82,9 @@ class Example(wx.Frame):
         rbt3 = wx.CheckBox(toppan, label="Chinese")
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
+        self.langBoxes[rbt1] = ["en", "ko"]
+        self.langBoxes[rbt2] = ["en", "jp"]
+        self.langBoxes[rbt3] = ["en", "zh-TW"]
 
         rb1 = wx.BoxSizer(wx.VERTICAL)
         txt11 = wx.StaticText(toppan, label="Korean->"); #txt11.SetLabelMarkup("<big>Korean-></big>")
@@ -88,6 +93,9 @@ class Example(wx.Frame):
         rbt3 = wx.CheckBox(toppan, label="Chinese")
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
+        self.langBoxes[rbt1] = ["ko", "en"]
+        self.langBoxes[rbt2] = ["ko", "jp"]
+        self.langBoxes[rbt3] = ["ko", "zh-TW"]
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
         txt11 = wx.StaticText(toppan, label="Japanese->"); #txt11.SetLabelMarkup("<big>Japanese-></big>")
@@ -96,6 +104,9 @@ class Example(wx.Frame):
         rbt3 = wx.CheckBox(toppan, label="Chinese")
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
+        self.langBoxes[rbt1] = ["jp", "en"]
+        self.langBoxes[rbt2] = ["jp", "ko"]
+        self.langBoxes[rbt3] = ["jp", "zh-TW"]
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
         txt11 = wx.StaticText(toppan, label="Chinese->"); #txt11.SetLabelMarkup("<big>Chinese-></big>")
@@ -104,8 +115,18 @@ class Example(wx.Frame):
         rbt3 = wx.CheckBox(toppan, label="Japanese")
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
+        self.langBoxes[rbt1] = ["zh-TW", "en"]
+        self.langBoxes[rbt2] = ["zh-TW", "ko"]
+        self.langBoxes[rbt3] = ["zh-TW", "jp"]
 
         vbox1.Add(hs)
+
+        for k, v in self.langBoxes.items():
+            if v in self.lang:
+                k.SetValue(True)
+            else:
+                k.SetValue(False)
+            k.Bind(wx.EVT_CHECKBOX, self.UpdateLang, k)
         
         # For Hongmin
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
@@ -162,6 +183,12 @@ class Example(wx.Frame):
         self.Log.WriteText("SYS\tShutting down TwitchBot\n")
         self.bot.terminate()
         self.bot = None
+
+    def UpdateLang(self, e):
+        self.lang = []
+        for k, v in self.langBoxes.items():
+            if k.GetValue():
+                self.lang.append(v)
 
     def OnIdle(self, e):
         if self.bot:
