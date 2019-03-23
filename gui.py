@@ -83,7 +83,7 @@ class Example(wx.Frame):
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
         self.langBoxes[rbt1] = ["en", "ko"]
-        self.langBoxes[rbt2] = ["en", "jp"]
+        self.langBoxes[rbt2] = ["en", "ja"]
         self.langBoxes[rbt3] = ["en", "zh-CN"]
 
         rb1 = wx.BoxSizer(wx.VERTICAL)
@@ -94,7 +94,7 @@ class Example(wx.Frame):
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
         self.langBoxes[rbt1] = ["ko", "en"]
-        self.langBoxes[rbt2] = ["ko", "jp"]
+        self.langBoxes[rbt2] = ["ko", "ja"]
         self.langBoxes[rbt3] = ["ko", "zh-CN"]
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
@@ -104,9 +104,9 @@ class Example(wx.Frame):
         rbt3 = wx.CheckBox(toppan, label="Chinese")
         [rb1.Add(r) for r in [txt11, rbt1, rbt2, rbt3]]
         hs.Add(rb1, flag=wx.ALL, border=10)
-        self.langBoxes[rbt1] = ["jp", "en"]
-        self.langBoxes[rbt2] = ["jp", "ko"]
-        self.langBoxes[rbt3] = ["jp", "zh-CN"]
+        self.langBoxes[rbt1] = ["ja", "en"]
+        self.langBoxes[rbt2] = ["ja", "ko"]
+        self.langBoxes[rbt3] = ["ja", "zh-CN"]
         
         rb1 = wx.BoxSizer(wx.VERTICAL)
         txt11 = wx.StaticText(toppan, label="Chinese->"); #txt11.SetLabelMarkup("<big>Chinese-></big>")
@@ -117,7 +117,7 @@ class Example(wx.Frame):
         hs.Add(rb1, flag=wx.ALL, border=10)
         self.langBoxes[rbt1] = ["zh-CN", "en"]
         self.langBoxes[rbt2] = ["zh-CN", "ko"]
-        self.langBoxes[rbt3] = ["zh-CN", "jp"]
+        self.langBoxes[rbt3] = ["zh-CN", "ja"]
 
         vbox1.Add(hs)
 
