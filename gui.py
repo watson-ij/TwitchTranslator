@@ -109,7 +109,7 @@ class Example(wx.Frame):
         
         # For Hongmin
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        font = wx.Font(14, wx.MODERN, wx.ITALIC, wx.NORMAL, True)
+        font = wx.Font(14, wx.SWISS, wx.ITALIC, wx.NORMAL, True)
         st2 = HyperLinkCtrl(toppan, label="Made for yasumi57", URL="https://www.twitch.tv/yasumi57"); st2.SetFont(font); hbox2.Add(st2, flag=wx.EXPAND|wx.RIGHT, border=10)
         vbox1.Add(hbox2, flag=wx.EXPAND|wx.ALL, border=10)
         # Finished
@@ -154,7 +154,8 @@ class Example(wx.Frame):
             '--clientid', self.clientid,
             '--lang', *[f"{f},{t}" for f, t in self.lang]
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        pipe_no_wait(self.bot.stdout)
+        pipe_no_wait(self.bot.stdout.fileno())
+        pipe_no_wait(self.bot.stderr.fileno())
         self.Log.WriteText("SYS\tStarting TwitchBot\n")
 
     def Stop(self, e):
@@ -164,7 +165,7 @@ class Example(wx.Frame):
 
     def OnIdle(self, e):
         if self.bot:
-            p = self.bot.poll()
+            p = False # self.bot.poll()
             if p:
                 self.bot = None
                 self.Log.WriteText("SYS\tTwitchBot Ended\n")
@@ -197,9 +198,9 @@ else:
     import os
 
     from ctypes import windll, byref, wintypes, GetLastError, WinError
-    from ctypes.wintypes import HANDLE, DWORD, POINTER, BOOL
+    from ctypes.wintypes import HANDLE, DWORD, BOOL, PDWORD
 
-    LPDWORD = POINTER(DWORD)
+    LPDWORD = PDWORD # POINTER(DWORD)
 
     PIPE_NOWAIT = wintypes.DWORD(0x00000001)
 
@@ -229,6 +230,7 @@ def main():
     settings = json.load(open('settings.json', 'r'))
     app = wx.App()
     frame = Example(settings, None, title='Simple App')
+    frame.SetDimensions(50,50,600,1000)
     frame.Show()
     app.MainLoop()
 
