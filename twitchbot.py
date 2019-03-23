@@ -13,6 +13,7 @@ import dateutil.parser
 import requests
 import json
 import time
+import pytz
 
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
@@ -76,7 +77,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 c.privmsg(self.channel, "Stream uptime: I haven't started streaming!")
             else:
                 start = dateutil.parser.parse(res['stream']['created_at'])
-                now = datetime.datetime.now()
+                now = datetime.datetime.now(pytz.timezone('UTC'))
                 delta = dateutil.relativedelta.relativedelta(now, start)
                 c.privmsg(self.channel, f"Stream uptime: {delta.hours}:{delta.minutes}")
         else:
