@@ -14,6 +14,7 @@ import requests
 import json
 import time
 import pytz
+import traceback
 
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
@@ -51,11 +52,12 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             if e.arguments[0].strip().rstrip().startswith('?'): return
             source = e.source.split('!')[0]
             if source == self.username: return
-            d = self.trans.detect(e.arguments[0])
-            print('Recieved message: "', e.arguments[0], '" from ', source, " in language ", d.lang)
+            msg = e.arguments[0]
+            d = self.trans.detect(msg)
+            print('Recieved message: "', msg.encode('utf-8'), '" from ', source, " in language ", d.lang)
             for f, t in self.lang:
                 if d.lang == f:
-                    tr = self.trans.translate(e.arguments[0], dest=t)
+                    tr = self.trans.translate(msg, dest=t)
                     c.privmsg(self.channel, f"{tr.text} @{source}")
                     print(f'Translated message to {t}: {tr.text}')
             sys.stdout.flush()
@@ -111,8 +113,11 @@ if __name__ == "__main__":
             )
             bot.start()
         except Exception as e:
-            print("ERROR!!!!! Printing backtrace:")
-            print()
-            print(e)
+            errlog = open('error.log', 'w')
+            print("ERROR!!!!! Printing backtrace:", file=errlog)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback, limit=50, file=errlog)
+            print(e, file=errlog)
             print()
             print("ERROR!!!!! Trying to restart."); sys.stdout.flush()
+            errlog.close()
