@@ -49,6 +49,14 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             cmd = e.arguments[0].split(' ')[0][1:]
             print('Received command: ' + cmd); sys.stdout.flush()
             self.do_command(e, cmd)
+        elif e.arguments[0][0] in "cejk" and e.arguments[0][1] == ' ':
+            source = e.source.split('!')[0]
+            to = {"c": "zh-CN", "j" : "ja", "k" : "ko", "e" : "en"}[e.arguments[0][0]]
+            msg = e.arguments[0][2:]
+            print('Recieved message: "', msg.encode('utf-8'), ' to be translated to ', to)
+            tr = self.trans.translate(msg, dest=to)
+            c.privmsg(self.channel, f"{tr.text} @{source}")
+            print(f'Translated message to {to}: {tr.text}')
         else:
             if e.arguments[0].strip().rstrip().startswith('?'): return
             source = e.source.split('!')[0]
@@ -70,6 +78,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         if cmd == "dice":
             print("a game of dice?")
             c.privmsg(self.channel, "You rolled a %d" % random.randint(1, 6))
+        elif cmd == "help":
+            c.privmsg(self.channel, "")
         elif cmd == "uptime":
             url = f'https://api.twitch.tv/kraken/streams/{self.channel[1:]}'
             print("getting uptime @", url)
@@ -84,7 +94,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 delta = dateutil.relativedelta.relativedelta(now, start)
                 c.privmsg(self.channel, f"Stream uptime: {delta.hours}:{delta.minutes}")
         else:
-            print(self.channel, "I dunno what "+cmd+" means")
+            print(self.channel, "I don't know what "+cmd+" means")
 
 # For argparser
 def lang_pair(s):
