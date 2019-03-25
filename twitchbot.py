@@ -34,6 +34,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.lang = lang
         self.clientid = clientid
         print("Translating languages (from,to): ", " ".join(f"{f},{t}" for f, t in self.lang))
+        self.singleLetterTranslate = {"c": "zh-CN", "j" : "ja", "k" : "ko", "e" : "en"}
 
     def on_welcome(self, c, e):
         print("Joining channel", self.channel[1:], "as user", self.username); sys.stdout.flush()
@@ -51,7 +52,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             self.do_command(e, cmd)
         elif e.arguments[0][0] in "cejk" and e.arguments[0][1] == ' ':
             source = e.source.split('!')[0]
-            to = {"c": "zh-CN", "j" : "ja", "k" : "ko", "e" : "en"}[e.arguments[0][0]]
+            to = self.singleLetterTranslate[e.arguments[0][0]]
             msg = e.arguments[0][2:]
             print('Recieved message: "', msg.encode('utf-8'), ' to be translated to ', to)
             tr = self.trans.translate(msg, dest=to)
@@ -80,7 +81,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             print("a game of dice?")
             c.privmsg(self.channel, "You rolled a %d" % random.randint(1, 6))
         elif cmd == "help":
-            c.privmsg(self.channel, "")
+            c.privmsg(self.channel, "Hello, I'm the TranslateBot, made for yasumi57. I am currently translating: %s. If you start a message with a letter and space, I will translate to a particular language: %s. I also know the commands: !dice, !uptime, !help." % (", ".join(f"from {f} to {t}" for f, t in self.lang), ", ".join(f"{c} to {lang}" for c, lang in self.singleLetterTranslate.items())))
         elif cmd == "uptime":
             url = f'https://api.twitch.tv/kraken/streams/{self.channel[1:]}'
             print("getting uptime @", url)
