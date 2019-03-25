@@ -20,7 +20,8 @@ import datetime
 
 class TwitchBot(irc.bot.SingleServerIRCBot):
 
-    def __init__(self, username, channel, oauth, lang, clientid):
+    def __init__(self, username, channel, oauth, lang, clientid, queue=None):
+        self.queue = queue
         server = 'irc.chat.twitch.tv'
         port = 6667
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port, oauth)], username, username)
@@ -33,11 +34,18 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         self.username = username
         self.lang = lang
         self.clientid = clientid
-        print("Translating languages (from,to): ", " ".join(f"{f},{t}" for f, t in self.lang))
+        self.log("Initializing translate bot")
+        self.log("Translating languages (from,to): ", " ".join(f"{f},{t}" for f, t in self.lang))
         self.singleLetterTranslate = {"c": "zh-CN", "j" : "ja", "k" : "ko", "e" : "en"}
 
+    def log(self, *args):
+        if self.queue is None:
+            print(*args)
+        else:
+            self.queue.put(" ".join(str(a) for a in args))
+
     def on_welcome(self, c, e):
-        print("Joining channel", self.channel[1:], "as user", self.username); sys.stdout.flush()
+        self.log("Joining channel", self.channel[1:], "as user", self.username)
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
         c.cap('REQ', ':twitch.tv/commands')
@@ -48,46 +56,46 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         # If a chat message starts with an exclamation point, try to run it as a command
         if e.arguments[0][:1] == '!':
             cmd = e.arguments[0].split(' ')[0][1:]
-            print('Received command: ' + cmd); sys.stdout.flush()
+            self.log('Received command: ' + cmd)
             self.do_command(e, cmd)
         elif e.arguments[0][0] in "cejk" and e.arguments[0][1] == ' ':
             source = e.source.split('!')[0]
             to = self.singleLetterTranslate[e.arguments[0][0]]
             msg = e.arguments[0][2:]
-            print('Recieved message: "', msg.encode('utf-8'), ' to be translated to ', to)
+            self.log('Recieved message: "', msg, ' to be translated to ', to)
             tr = self.trans.translate(msg, dest=to)
             c.privmsg(self.channel, f"{tr.text} @{source}")
-            print(f'Translated message to {to}: {tr.text}')
+            self.log(f'Translated message to {to}: {tr.text}')
         else:
             if e.arguments[0].strip().rstrip().startswith('?'): return
             source = e.source.split('!')[0]
             if source == self.username: return
             msg = e.arguments[0]
             d = self.trans.detect(msg)
-            print('Recieved message: "', msg.encode('utf-8'), '" from ', source, " in language ", d.lang)
+            self.log('Recieved message: "', msg, '" from ', source, " in language ", d.lang)
             for f, t in self.lang:
                 if d.lang == f:
                     tr = self.trans.translate(msg, dest=t)
                     tr_msg = tr.text
                     c.privmsg(self.channel, f"{tr_msg} @{source}")
-                    print(f'Translated message to {t}: {tr_msg.encode("utf-8")}')
+                    self.log(f'Translated message to {t}: {tr_msg}')
             sys.stdout.flush()
         return
 
     def do_command(self, e, cmd):
         c = self.connection
-        print(cmd); sys.stdout.flush()
+        self.log(cmd)
         if cmd == "dice":
-            print("a game of dice?")
+            self.log("a game of dice?")
             c.privmsg(self.channel, "You rolled a %d" % random.randint(1, 6))
         elif cmd == "help":
             c.privmsg(self.channel, "Hello, I'm the TranslateBot, made for yasumi57. I am currently translating: %s. If you start a message with a letter and space, I will translate to a particular language: %s. I also know the commands: !dice, !uptime, !help." % (", ".join(f"from {f} to {t}" for f, t in self.lang), ", ".join(f"{c} to {lang}" for c, lang in self.singleLetterTranslate.items())))
         elif cmd == "uptime":
             url = f'https://api.twitch.tv/kraken/streams/{self.channel[1:]}'
-            print("getting uptime @", url)
+            self.log("getting uptime @", url)
             r = requests.get(url=url, headers={"Client-ID": self.clientid})
             res = json.loads(r.text)
-            print(res)
+            self.log(res)
             if res['stream'] is None:
                 c.privmsg(self.channel, "Stream uptime: I haven't started streaming!")
             else:
@@ -96,7 +104,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
                 delta = dateutil.relativedelta.relativedelta(now, start)
                 c.privmsg(self.channel, f"Stream uptime: {delta.hours}:{delta.minutes}")
         else:
-            print(self.channel, "I don't know what "+cmd+" means")
+            self.log(self.channel, "I don't know what "+cmd+" means")
 
 # For argparser
 def lang_pair(s):
@@ -114,7 +122,7 @@ if __name__ == "__main__":
     parser.add_argument("--lang", dest='lang', type=lang_pair, nargs='+', help='language pairs')
     parser.add_argument("--clientid", dest='clientid', default='', help='clientid for twitch api')
     args = parser.parse_args()
-    print('Starting TwitchBot'); sys.stdout.flush()
+    print('Starting TwitchBot')
     while True:
         try:
             bot = TwitchBot(# Required inputs
@@ -132,5 +140,5 @@ if __name__ == "__main__":
             traceback.print_tb(exc_traceback, limit=50, file=errlog)
             print(e, file=errlog)
             print()
-            print("ERROR!!!!! Trying to restart."); sys.stdout.flush()
+            print("ERROR!!!!! Trying to restart.")
             errlog.close()

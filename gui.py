@@ -7,6 +7,8 @@ from twitchbot import TwitchBot
 import subprocess
 import sys
 from wx.lib.agw.hyperlink import HyperLinkCtrl
+import threading
+import queue
 
 class Example(wx.Frame):
 
@@ -167,16 +169,31 @@ class Example(wx.Frame):
             open('settings.json', 'w'))
 
     def Start(self, e):
-        self.bot = subprocess.Popen([
-            sys.executable, 'twitchbot.py',
-            '--username', self.UserName.GetValue(),
-            '--channel', self.Channel.GetValue(),
-            '--oauth', self.OAuth.GetValue(),
-            '--clientid', self.clientid,
-            '--lang', *[f"{f},{t}" for f, t in self.lang]
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        pipe_no_wait(self.bot.stdout.fileno())
-        pipe_no_wait(self.bot.stderr.fileno())
+        self.queue = queue.Queue()
+        def runbot(*args, **kwargs):
+            bot = TwitchBot(*args, **kwargs)
+            bot.start()
+        self.bot = threading.Thread(
+            target=runbot,
+            kwargs={
+                "username":self.UserName.GetValue(),
+                "channel":self.Channel.GetValue(),
+                "oauth":self.OAuth.GetValue(),
+                "lang": self.lang,
+                "clientid":self.clientid,
+                "queue":self.queue})
+        self.bot.daemon = True
+        self.bot.start()
+        # self.bot = subprocess.Popen([
+        #     sys.executable, 'twitchbot.py',
+        #     '--username', self.UserName.GetValue(),
+        #     '--channel', self.Channel.GetValue(),
+        #     '--oauth', self.OAuth.GetValue(),
+        #     '--clientid', self.clientid,
+        #     '--lang', *[f"{f},{t}" for f, t in self.lang]
+        # ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # pipe_no_wait(self.bot.stdout.fileno())
+        # pipe_no_wait(self.bot.stderr.fileno())
         self.Log.WriteText("SYS\tStarting TwitchBot\n")
 
     def Stop(self, e):
@@ -197,11 +214,11 @@ class Example(wx.Frame):
                 self.bot = None
                 self.Log.WriteText("SYS\tTwitchBot Ended\n")
                 return
-            o = non_block_read(self.bot.stdout)
-            if o and o[-1] == '\n': o = o[:-1]
-            if o: self.Log.WriteText("BOT\t" + "\nBOT\t".join(o.decode('utf-8').split("\n")) + "\n")
-            o = non_block_read(self.bot.stderr)
-            if o: self.Log.WriteText("ERR\t" + o.decode('utf-8'))
+            try:
+                nxt = self.queue.get(False)
+                self.Log.WriteText("BOT\t"+nxt+'\n')
+            except queue.Empty:
+                pass
 
 # From https://chase-seibert.github.io/blog/2012/11/16/python-subprocess-asynchronous-read-stdout.html
 import os
