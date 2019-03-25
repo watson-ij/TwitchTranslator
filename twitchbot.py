@@ -67,8 +67,9 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             for f, t in self.lang:
                 if d.lang == f:
                     tr = self.trans.translate(msg, dest=t)
-                    c.privmsg(self.channel, f"{tr.text} @{source}")
-                    print(f'Translated message to {t}: {tr.text}')
+                    tr_msg = tr.text
+                    c.privmsg(self.channel, f"{tr_msg} @{source}")
+                    print(f'Translated message to {t}: {tr_msg.encode("utf-8")}')
             sys.stdout.flush()
         return
 
