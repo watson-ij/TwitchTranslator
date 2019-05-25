@@ -191,9 +191,12 @@ class Example(wx.Frame):
             try:
                 nxt = self.queue.get(False)
                 self.Log.WriteText(" "+nxt+'\n')
+                self.Refresh()
+                self.Update()
             except queue.Empty:
-                time.sleep(0.2)
                 pass
+            time.sleep(0.2)
+            e.RequestMore()
 
 def main():
     settings = json.load(open('settings.json', 'r'))

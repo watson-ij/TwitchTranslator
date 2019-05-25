@@ -219,6 +219,8 @@ class Example(wx.Frame):
                 self.Log.WriteText("BOT\t"+nxt+'\n')
             except queue.Empty:
                 pass
+            time.sleep(0.2)
+            e.RequestMore()
 
 # From https://chase-seibert.github.io/blog/2012/11/16/python-subprocess-asynchronous-read-stdout.html
 import os
