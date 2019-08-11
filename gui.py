@@ -9,6 +9,7 @@ import sys
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 import threading
 import queue
+import time
 
 class Example(wx.Frame):
 
